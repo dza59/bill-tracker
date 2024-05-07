@@ -5,8 +5,38 @@ function App() {
   const [name, setName] = useState('');
   const [datetime, setDatetime] = useState('');
   const [description, setDescription] = useState('');
-  function addNewTransaction() {
+
+  function addNewTransaction(e: { preventDefault: () => void }) {
+    e.preventDefault();
     // TODO: Call BE API to add new transaction
+
+    const url = import.meta.env.VITE_APP_API_URL + '/transaction';
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name,
+        datetime,
+        description,
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response;
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        // Handle the response data
+        console.log(data);
+      })
+      .catch((error) => {
+        // Handle any errors
+      });
   }
 
   return (
