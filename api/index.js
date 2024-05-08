@@ -15,25 +15,27 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 4040;
 
-app.get('/api/test', (req, res) => {
-  res.json({ message: 'Hello World!' });
-  console.log('MongoDB URL:', mongodbUrl);
+app.get('/api/transactions', async (req, res) => {
+  await mongoose.connect(mongodbUrl);
+  const transactions = await Transaction.find();
+  res.json(transactions);
 });
 
 app.post('/api/transaction', async (req, res) => {
-  console.log('MongoDB URL:', mongodbUrl); // Confirm the URL is visible here as well
-  const { name, description, datetime } = req.body;
+  console.log('POST /api/transaction');
 
-  try {
-    const transaction = new Transaction({ name, description, datetime });
-    const savedTransaction = await transaction.save();
-    res.status(201).json(savedTransaction);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
+  await mongoose.connect(mongodbUrl);
+  const { price, name, description, datetime } = req.body;
+
+  const transaction = await Transaction.create({
+    name,
+    price,
+    description,
+    datetime,
+  });
+  res.json(transaction);
 });
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log('MongoDB URL:', mongodbUrl);
 });

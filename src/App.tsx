@@ -1,16 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 
 function App() {
   const [name, setName] = useState('');
   const [datetime, setDatetime] = useState('');
   const [description, setDescription] = useState('');
+  const [transactions, setTransactions] = useState([]);
+
+  useEffect(() => {
+    getTransactions().then(setTransactions);
+  }, []);
+
+  async function getTransactions() {
+    const url = import.meta.env.VITE_APP_API_URL + '/transactions';
+    const response = await fetch(url);
+    return await response.json();
+  }
 
   function addNewTransaction(e: { preventDefault: () => void }) {
     e.preventDefault();
-    // TODO: Call BE API to add new transaction
 
     const url = import.meta.env.VITE_APP_API_URL + '/transaction';
+    const price = name.split(' ')[0];
 
     fetch(url, {
       method: 'POST',
@@ -18,25 +29,19 @@ function App() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        name,
+        price,
+        name: name.substring(price.length + 1),
         datetime,
         description,
       }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response;
-      })
-      .then((response) => response.json())
-      .then((data) => {
-        // Handle the response data
-        console.log(data);
-      })
-      .catch((error) => {
-        // Handle any errors
+    }).then((response) => {
+      response.json().then((json) => {
+        setName('');
+        setDatetime('');
+        setDescription('');
+        console.log('results: ', json);
       });
+    });
   }
 
   return (
@@ -87,30 +92,27 @@ function App() {
 
       <div className='transactions bg-gray-100 p-4'>
         <ul className='bg-white rounded-lg shadow divide-y divide-gray-200 max-w-sm'>
-          <li className='px-6 py-4'>
-            <div className='flex justify-between'>
-              <span className='font-semibold text-lg'>List Item 1</span>
-              <span className='text-green-600 text-xl'>+$500</span>
-            </div>
-            <div className='mt-4 flex items-center justify-between'>
-              <p className='text-sm font-medium text-gray-500 text-left'>
-                Lorem ipsum dolor sit amet, consectetur adipiscing eli
-              </p>
-              <span className='text-xs text-gray-500'>2022-01-01 15:45</span>
-            </div>
-          </li>
-          <li className='px-6 py-4'>
-            <div className='flex justify-between'>
-              <span className='font-semibold text-lg'>List Item 2</span>
-              <span className='text-red-500 text-xl'>-$100</span>
-            </div>
-            <div className='mt-4 flex items-center justify-between'>
-              <p className='text-sm font-medium text-gray-500 text-left'>
-                Lorem ipsum dolor sit amet, consectetur adipiscing eli
-              </p>
-              <span className='text-xs text-gray-500'>2022-01-01 15:45</span>
-            </div>
-          </li>
+          {transactions.length > 0 &&
+            transactions.map((transaction: any) => (
+              <li key={transaction.id} className='px-6 py-4'>
+                <div className='flex justify-between'>
+                  <span className='font-semibold text-lg'>
+                    {transaction.name}
+                  </span>
+                  <span className='text-red-600 text-xl'>
+                    - {transaction.price}
+                  </span>
+                </div>
+                <div className='mt-4 flex items-center justify-between'>
+                  <p className='text-sm font-medium text-gray-500 text-left'>
+                    {transaction.description}
+                  </p>
+                  <span className='text-xs text-gray-500'>
+                    {transaction.datetime}
+                  </span>
+                </div>
+              </li>
+            ))}
         </ul>
       </div>
     </main>
