@@ -44,10 +44,17 @@ function App() {
     });
   }
 
+  let balance = 0;
+  transactions.map((transaction: any) => {
+    balance += transaction.price;
+  });
+
   return (
     <main className='flex flex-col items-center justify-center min-h-screen w-full'>
       <div>
-        <h1 className='text-2xl font-semibold'>$400</h1>
+        <h1 className='text-2xl font-semibold'>
+          Balance: ${balance.toFixed(2)}
+        </h1>
       </div>
 
       <form
@@ -99,8 +106,13 @@ function App() {
                   <span className='font-semibold text-lg'>
                     {transaction.name}
                   </span>
-                  <span className='text-red-600 text-xl'>
-                    - {transaction.price}
+                  <span
+                    className={`text-xl ${
+                      transaction.price > 0 ? 'text-green-600' : 'text-red-600'
+                    }`}
+                  >
+                    {transaction.price > 0 ? '+' : ''}
+                    {transaction.price}
                   </span>
                 </div>
                 <div className='mt-4 flex items-center justify-between'>
